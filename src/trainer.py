@@ -17,10 +17,10 @@ class Trainer:
             self.model.load_state_dict(torch.load(model_weight))
         self.model.cuda()
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=0.0003, weight_decay=0.0001)
-        _, self.train_loader = get_loader("data/seoul_grand_park/train.csv",
+        _, self.train_loader = get_loader("data/train.csv",
                                           batch_size=128,
                                           shuffle=True)
-        _, self.test_loader = get_loader("data/seoul_grand_park/test.csv", 
+        _, self.test_loader = get_loader("data/test.csv", 
                                          batch_size=256, 
                                          shuffle=False)
         self.best_rmse = 100000
@@ -58,12 +58,18 @@ class Trainer:
                 y_pred = self.model(x.cuda()).unsqueeze(1).cpu().numpy()
             y_list.extend(y)
             y_pred_list.extend(y_pred)
-        mae = np.mean(np.abs(np.array(y_list) - np.array(y_pred_list)))
-        rmse = np.sqrt(np.mean((np.array(y_list) - np.array(y_pred_list))**2))
+        y_list, y_pred_list = np.array(y_list), np.array(y_pred_list)
+
+        mae = np.mean(np.abs(y_list - y_pred_list))
+        rmse = np.sqrt(np.mean((y_list - y_pred_list)**2))
+        y_mean = np.mean(y_list)
+        r_square = np.sum((y_pred_list - y_mean)**2) / np.sum((y_list - y_mean)**2)
+        n = len(y_list)
+        adj_r_squre = 1 - (n - 1) / (n - 12 - 1) * (1 - r_square)
         if rmse < self.best_rmse:
             self.best_rmse = rmse
             flag = True
-        print(f"Evaluation || MAE: {mae:.2f} | RMSE: {rmse:.2f} | Best RMSE: {self.best_rmse:.2f}")
+        print(f"Evaluation || MAE: {mae:.2f} | RMSE: {rmse:.2f} | R squre: {r_square:.2f} | Adj R square: {adj_r_squre:.2f} | Best RMSE: {self.best_rmse:.2f}")
         return flag
 
     def save(self):
