@@ -28,13 +28,12 @@ class Trainer:
     def train(self):
         """Run main training loop."""
         for epoch_idx in range(2000):
-            print(f"\nEpoch {epoch_idx + 1}")
-            self.train_epoch()
+            self.train_epoch(epoch_idx)
             flag = self.evaluate()
             if flag:
                 self.save()
 
-    def train_epoch(self):
+    def train_epoch(self, epoch_idx):
         """Train model an epoch."""
         self.model.train()
         for batch_idx, (x, y) in enumerate(self.train_loader):
@@ -44,7 +43,7 @@ class Trainer:
             self.optimizer.zero_grad()
             cost.backward()
             self.optimizer.step()
-        print(f"Batch {batch_idx + 1}/{len(self.train_loader)} | Cost: {cost.item()}")
+        print(f"Epoch {epoch_idx + 1} | Cost: {cost.item()}")
 
     def evaluate(self):
         """Evaluate model by test data."""
@@ -69,7 +68,7 @@ class Trainer:
         if rmse < self.best_rmse:
             self.best_rmse = rmse
             flag = True
-        print(f"Evaluation || MAE: {mae:.2f} | RMSE: {rmse:.2f} | R squre: {r_square:.2f} | Adj R square: {adj_r_squre:.2f} | Best RMSE: {self.best_rmse:.2f}")
+        print(f"Evaluation || MAE: {mae:.2f} | RMSE: {rmse:.2f} | R squre: {r_square:.2f} | Adj R square: {adj_r_squre:.2f} | Best RMSE: {self.best_rmse:.2f}\n")
         return flag
 
     def save(self):
